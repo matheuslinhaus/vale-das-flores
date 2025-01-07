@@ -30,4 +30,15 @@ public class UserService {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		return repository.save(user);
 	}
+
+	public boolean authenticateUser(String email, String password) {
+		User user = repository.findByEmail(email);
+
+		if (user == null) {
+			return false; // Se o usuário não existe, retorno false
+		}
+
+		// Verifica se a senha fornecida corresponde à senha criptografada no banco
+		return passwordEncoder.matches(password, user.getPassword());
+	}
 }

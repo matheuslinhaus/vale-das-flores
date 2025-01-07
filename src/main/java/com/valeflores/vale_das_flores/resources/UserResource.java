@@ -1,4 +1,4 @@
-package com.valeflores.vale_das_flores.entities.resources;
+package com.valeflores.vale_das_flores.resources;
 
 import java.net.URI;
 
@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.valeflores.vale_das_flores.config.JwtUtil;
+import com.valeflores.vale_das_flores.dto.AuthResponseDTO;
+import com.valeflores.vale_das_flores.dto.LoginRequestDTO;
 import com.valeflores.vale_das_flores.dto.UserCreateDTO;
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.mappers.UserMapper;
@@ -29,6 +32,9 @@ public class UserResource {
 	@Autowired
 	private UserService service;
 
+	@Autowired
+	private JwtUtil jwtUtil;
+
 	@Operation(summary = "New User", description = "Create a new user", tags = "User", responses = {
 			@ApiResponse(responseCode = "201", description = "Successfully inserted", content = @Content(mediaType = "application/json", schema = @Schema(example = ""))) })
 	@PostMapping(value = "register")
@@ -37,5 +43,17 @@ public class UserResource {
 		user = service.insert(user);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId()).toUri();
 		return ResponseEntity.created(uri).body(user);
+	}
+
+	@PostMapping(value = "/login", produces = "application/json")
+	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+		boolean isAuthenticated = service.authenticateUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+
+		if (isAuthenticated) {
+			String token = jwtUtil.generateToken(loginRequestDTO.getEmail());
+			return ResponseEntity.ok(new AuthResponseDTO(token));
+		}
+
+		return ResponseEntity.status(401).body("Unauthorized");
 	}
 }
