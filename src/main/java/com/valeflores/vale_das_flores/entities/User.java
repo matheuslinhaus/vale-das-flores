@@ -1,12 +1,12 @@
 package com.valeflores.vale_das_flores.entities;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Objects;
 
-import org.springframework.format.annotation.DateTimeFormat;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.valeflores.vale_das_flores.entities.enums.UserType;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,32 +30,36 @@ public class User {
 	@Size(min = 8, max = 300, message = "The name must be between 8 and 300 characters long.")
 	private String name;
 
+	@Column(nullable = false, unique = true)
 	@NotEmpty(message = "The e-mail is required and cannot be empty.")
 	@Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}")
 	private String email;
 
 	private String password;
-	
+
 	@Enumerated(EnumType.ORDINAL)
-	private UserType role;
+	private UserType role = UserType.USER;
 
-	@DateTimeFormat
-	private Date registrationDate;
-
+	@Column(updatable = false)
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyy-MM-dd'T'HH:mm:ss'Z'", timezone = "GMT")
+	private Instant registrationDate = Instant.now();
+	
 	public User() {
 	}
 
-	public User(Long id, String name, String email, String password, UserType role, Date registrationDate) {
+	public User(Long id, String name, String email, String password) {
 		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.password = password;
-		this.role = role;
-		this.registrationDate = registrationDate;
 	}
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -86,11 +90,17 @@ public class User {
 		return role;
 	}
 
-	public Date getRegistrationDate() {
+	public void setRole(UserType role) {
+		if (role != null) {
+			this.role = role;
+		}
+	}
+
+	public Instant getRegistrationDate() {
 		return registrationDate;
 	}
 
-	public void setRegistrationDate(Date registrationDate) {
+	public void setRegistrationDate(Instant registrationDate) {
 		this.registrationDate = registrationDate;
 	}
 
@@ -110,4 +120,5 @@ public class User {
 		User other = (User) obj;
 		return Objects.equals(email, other.email);
 	}
+
 }
