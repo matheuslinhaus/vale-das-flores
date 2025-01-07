@@ -7,4 +7,6 @@ import com.valeflores.vale_das_flores.entities.User;
 public interface UserRepository extends JpaRepository<User, Long>{
 	boolean existsByEmail(String email);
 
+	User findByEmail(String email);
+
 }

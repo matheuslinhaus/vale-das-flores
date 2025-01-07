@@ -1,4 +1,4 @@
-package com.valeflores.vale_das_flores.entities.resources.exceptions;
+package com.valeflores.vale_das_flores.resources.exceptions;
 
 import java.io.Serializable;
 import java.time.Instant;
