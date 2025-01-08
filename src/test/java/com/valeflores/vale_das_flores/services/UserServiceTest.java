@@ -14,7 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.repositories.UserRepository;
-import com.valeflores.vale_das_flores.services.exceptions.EmailException;
+import com.valeflores.vale_das_flores.services.exceptions.RegisterException;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -55,7 +55,7 @@ public class UserServiceTest {
         user.setName("Test User");
         user.setPassword("password");
 
-        assertThrows(EmailException.class, () -> {
+        assertThrows(RegisterException.class, () -> {
             userService.insert(user);
         });
     }
