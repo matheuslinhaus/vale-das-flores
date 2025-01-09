@@ -13,6 +13,8 @@ public class UserCreateDTO {
 	@NotEmpty(message = "The e-mail is required and cannot be empty.")
 	@Email(message = "Invalid email format.")
 	private String email;
+	
+	private String phone;
 
 	@NotEmpty(message = "The password is required and cannot be empty.")
 	@Size(min = 8, message = "The password must be at least 8 characters long.")
@@ -32,6 +34,14 @@ public class UserCreateDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
 	}
 
 	public String getPassword() {
