@@ -5,8 +5,10 @@ import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -15,6 +17,7 @@ import com.valeflores.vale_das_flores.config.JwtUtil;
 import com.valeflores.vale_das_flores.dto.AuthResponseDTO;
 import com.valeflores.vale_das_flores.dto.LoginRequestDTO;
 import com.valeflores.vale_das_flores.dto.UserCreateDTO;
+import com.valeflores.vale_das_flores.dto.UserResponseDTO;
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.mappers.UserMapper;
 import com.valeflores.vale_das_flores.services.UserService;
@@ -55,5 +58,25 @@ public class UserResource {
 		}
 
 		return ResponseEntity.status(401).body("Unauthorized");
+	}
+	
+	@GetMapping(value = "/user", produces = "application/json")
+	public ResponseEntity<?> getUserFromToken(@RequestHeader("Authorization") String token) {
+	    try {
+	        token = token.replace("Bearer ", "");
+
+	        if (jwtUtil.isTokenExpired(token)) {
+	            return ResponseEntity.status(401).body("Token expired");
+	        }
+
+	        String email = jwtUtil.extractUsername(token);
+	        User user = service.findByEmail(email);
+
+	        UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getPhone());
+
+	        return ResponseEntity.ok(userResponseDTO);
+	    } catch (Exception e) {
+	        return ResponseEntity.status(401).body("Invalid token");
+	    }
 	}
 }

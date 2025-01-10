@@ -70,5 +70,9 @@ public class UserService {
 	private boolean isValidPassword(String password) {
 		return password.length() >= 8;
 	}
+
+	public User findByEmail(String email) {
+        return repository.findByEmail(email);         
+    }
 	
 }
