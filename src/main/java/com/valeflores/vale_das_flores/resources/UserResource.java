@@ -1,7 +1,5 @@
 package com.valeflores.vale_das_flores.resources;
 
-import java.net.URI;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.valeflores.vale_das_flores.config.JwtUtil;
 import com.valeflores.vale_das_flores.dto.AuthResponseDTO;
@@ -45,11 +42,11 @@ public class UserResource {
 	@Operation(summary = "New User", description = "Create a new user", tags = "User", responses = {
 			@ApiResponse(responseCode = "201", description = "Successfully inserted", content = @Content(mediaType = "application/json", schema = @Schema(example = ""))) })
 	@PostMapping(value = "register")
-	public ResponseEntity<User> insert(@RequestBody UserCreateDTO userCreateDTO) {
+	public ResponseEntity<AuthResponseDTO> insert(@RequestBody UserCreateDTO userCreateDTO) {
 		User user = UserMapper.toEntity(userCreateDTO);
 		user = service.insert(user);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId()).toUri();
-		return ResponseEntity.created(uri).body(user);
+		String token = jwtUtil.generateToken(user.getEmail());
+		return ResponseEntity.ok(new AuthResponseDTO(token));
 	}
 
 	@PostMapping(value = "/login", produces = "application/json")
