@@ -20,6 +20,7 @@ import com.valeflores.vale_das_flores.dto.UserCreateDTO;
 import com.valeflores.vale_das_flores.dto.UserResponseDTO;
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.mappers.UserMapper;
+import com.valeflores.vale_das_flores.services.LoginAttemptService;
 import com.valeflores.vale_das_flores.services.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +39,9 @@ public class UserResource {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	@Autowired
+	private LoginAttemptService loginAttemptService;
+
 	@Operation(summary = "New User", description = "Create a new user", tags = "User", responses = {
 			@ApiResponse(responseCode = "201", description = "Successfully inserted", content = @Content(mediaType = "application/json", schema = @Schema(example = ""))) })
 	@PostMapping(value = "register")
@@ -50,33 +54,40 @@ public class UserResource {
 
 	@PostMapping(value = "/login", produces = "application/json")
 	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+		if (loginAttemptService.isBlocked(loginRequestDTO.getEmail())) {
+			return ResponseEntity.status(429).body("Too many login attempts. Please try again later.");
+		}
+
 		boolean isAuthenticated = service.authenticateUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
 
 		if (isAuthenticated) {
 			String token = jwtUtil.generateToken(loginRequestDTO.getEmail());
+			loginAttemptService.loginSucceeded(loginRequestDTO.getEmail());
 			return ResponseEntity.ok(new AuthResponseDTO(token));
 		}
 
+		loginAttemptService.loginFailed(loginRequestDTO.getEmail());
 		return ResponseEntity.status(401).body("Unauthorized");
 	}
-	
+
 	@GetMapping(value = "/user", produces = "application/json")
 	public ResponseEntity<?> getUserFromToken(@RequestHeader("Authorization") String token) {
-	    try {
-	        token = token.replace("Bearer ", "");
+		try {
+			token = token.replace("Bearer ", "");
 
-	        if (jwtUtil.isTokenExpired(token)) {
-	            return ResponseEntity.status(401).body("Token expired");
-	        }
+			if (jwtUtil.isTokenExpired(token)) {
+				return ResponseEntity.status(401).body("Token expired");
+			}
 
-	        String email = jwtUtil.extractUsername(token);
-	        User user = service.findByEmail(email);
+			String email = jwtUtil.extractUsername(token);
+			User user = service.findByEmail(email);
 
-	        UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), user.getPhone());
+			UserResponseDTO userResponseDTO = new UserResponseDTO(user.getId(), user.getName(), user.getEmail(),
+					user.getPhone());
 
-	        return ResponseEntity.ok(userResponseDTO);
-	    } catch (Exception e) {
-	        return ResponseEntity.status(401).body("Invalid token");
-	    }
+			return ResponseEntity.ok(userResponseDTO);
+		} catch (Exception e) {
+			return ResponseEntity.status(401).body("Invalid token");
+		}
 	}
 }
