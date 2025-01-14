@@ -11,6 +11,7 @@ import com.valeflores.vale_das_flores.services.exceptions.DatabaseException;
 import com.valeflores.vale_das_flores.services.exceptions.RegisterException;
 import com.valeflores.vale_das_flores.services.exceptions.ResourceNotFoundException;
 import com.valeflores.vale_das_flores.services.exceptions.TokenException;
+import com.valeflores.vale_das_flores.services.exceptions.UserNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -20,6 +21,15 @@ public class ResourceExceptionHandler {
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<StandardError> resourceNotFound(ResourceNotFoundException e, HttpServletRequest request) {
 		String error = "Resource not found";
+		HttpStatus status = HttpStatus.NOT_FOUND;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
+				request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<StandardError> userNotFound(UserNotFoundException e, HttpServletRequest request) {
+		String error = "User not found";
 		HttpStatus status = HttpStatus.NOT_FOUND;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
 				request.getRequestURI());

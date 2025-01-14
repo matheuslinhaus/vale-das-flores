@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.valeflores.vale_das_flores.config.JwtUtil;
 import com.valeflores.vale_das_flores.dto.AuthResponseDTO;
+import com.valeflores.vale_das_flores.dto.UpdatePasswordDTO;
 import com.valeflores.vale_das_flores.dto.UserResponseDTO;
 import com.valeflores.vale_das_flores.dto.UserUpdateDTO;
 import com.valeflores.vale_das_flores.entities.User;
@@ -48,6 +49,21 @@ public class UserController {
 		User user = service.findByEmail(email);
 
 		User updatedUser = service.update(user, userUpdateDTO);
+
+		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
+		AuthResponseDTO response = new AuthResponseDTO(newToken);
+		return ResponseEntity.ok(response);
+	}
+	
+	@PutMapping(value = "/me/change-password", produces = "application/json")
+	public ResponseEntity<AuthResponseDTO> updatePasswordFromToken(@RequestHeader("Authorization") String token,
+			@RequestBody UpdatePasswordDTO passwordDTO) {
+		token = token.replace("Bearer ", "");
+		jwtUtil.isTokenExpired(token);
+		String email = jwtUtil.extractUsername(token);
+		User user = service.findByEmail(email);
+
+		User updatedUser = service.updatePassword(user, passwordDTO);
 
 		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
 		AuthResponseDTO response = new AuthResponseDTO(newToken);
