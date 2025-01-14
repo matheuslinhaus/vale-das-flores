@@ -1,4 +1,4 @@
-package com.valeflores.vale_das_flores.resources.exceptions;
+package com.valeflores.vale_das_flores.controllers.exceptions;
 
 import java.time.Instant;
 
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.valeflores.vale_das_flores.services.exceptions.DatabaseException;
 import com.valeflores.vale_das_flores.services.exceptions.RegisterException;
 import com.valeflores.vale_das_flores.services.exceptions.ResourceNotFoundException;
+import com.valeflores.vale_das_flores.services.exceptions.TokenException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,6 +38,15 @@ public class ResourceExceptionHandler {
 	@ExceptionHandler(RegisterException.class)
 	public ResponseEntity<StandardError> registerErrorData(RegisterException e, HttpServletRequest request) {
 		String error = "Register error";
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
+				request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(TokenException.class)
+	public ResponseEntity<StandardError> tokenError(TokenException e, HttpServletRequest request) {
+		String error = "Token error";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
 				request.getRequestURI());
