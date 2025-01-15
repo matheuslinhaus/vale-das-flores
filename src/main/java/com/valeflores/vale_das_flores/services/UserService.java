@@ -1,9 +1,12 @@
 package com.valeflores.vale_das_flores.services;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +16,6 @@ import com.valeflores.vale_das_flores.dto.UserUpdateDTO;
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.repositories.UserRepository;
 import com.valeflores.vale_das_flores.services.exceptions.RegisterException;
-import com.valeflores.vale_das_flores.services.exceptions.ResourceNotFoundException;
 import com.valeflores.vale_das_flores.services.exceptions.UserNotFoundException;
 
 @Service
@@ -21,6 +23,9 @@ public class UserService {
 
 	@Autowired
 	private UserRepository repository;
+
+	@Autowired
+	private MessageSource messageSource;
 
 	private PasswordEncoder passwordEncoder;
 
@@ -32,21 +37,21 @@ public class UserService {
 
 	@Transactional
 	public User insert(User user) {
+		Locale locale = LocaleContextHolder.getLocale();
 		if (!isValidName(user.getName())) {
-			throw new RegisterException(
-					"Your name must include both first and last names, with a minimum of 8 characters.");
+			throw new RegisterException(messageSource.getMessage("user.invalid.name", null, locale));
 		}
 
 		if (!isValidEmail(user.getEmail())) {
-			throw new RegisterException("Invalid email. Please provide a valid email address.");
+			throw new RegisterException(messageSource.getMessage("user.invalid.email", null, locale));
 		}
 
 		if (repository.existsByEmail(user.getEmail())) {
-			throw new RegisterException("Email already in use.");
+			throw new RegisterException(messageSource.getMessage("user.email.in.use", null, locale));
 		}
 
 		if (!isValidPassword(user.getPassword())) {
-			throw new RegisterException("Your password must be at least 8 characters long for security reasons.");
+			throw new RegisterException(messageSource.getMessage("user.invalid.password", null, locale));
 		}
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -55,22 +60,22 @@ public class UserService {
 
 	@Transactional
 	public User update(User user, UserUpdateDTO userUpdateDTO) {
+		Locale locale = LocaleContextHolder.getLocale();
 		if (userUpdateDTO.getName() != null) {
 			if (!isValidName(userUpdateDTO.getName())) {
-				throw new RegisterException(
-						"Your name must include both first and last names, with a minimum of 8 characters.");
+				throw new RegisterException(messageSource.getMessage("user.invalid.name", null, locale));
 			}
 			user.setName(userUpdateDTO.getName());
 		}
 
 		if (userUpdateDTO.getEmail() != null) {
 			if (!isValidEmail(userUpdateDTO.getEmail())) {
-				throw new RegisterException("Invalid email. Please provide a valid email address.");
+				throw new RegisterException(messageSource.getMessage("user.invalid.email", null, locale));
 			}
 			boolean emailInUse = repository.existsByEmail(userUpdateDTO.getEmail())
 					&& !user.getEmail().equals(userUpdateDTO.getEmail());
 			if (emailInUse) {
-				throw new RegisterException("Email already in use.");
+				throw new RegisterException(messageSource.getMessage("user.email.in.use", null, locale));
 			}
 			user.setEmail(userUpdateDTO.getEmail());
 		}
@@ -79,13 +84,13 @@ public class UserService {
 
 	@Transactional
 	public User updatePassword(User user, UpdatePasswordDTO password) {
+		Locale locale = LocaleContextHolder.getLocale();
 		if (!isValidUpdatePassword(user.getPassword(), password.getOldPassword())) {
-			throw new RegisterException(
-					"The current password entered does not match the registered one. Check that you entered correctly and try again.");
+			throw new RegisterException(messageSource.getMessage("user.update.password.not.match", null, locale));
 		}
 
 		if (!isValidPassword(password.getNewPassword())) {
-			throw new RegisterException("Your password must be at least 8 characters long for security reasons.");
+			throw new RegisterException(messageSource.getMessage("user.invalid.password", null, locale));
 		}
 
 		user.setPassword(passwordEncoder.encode(password.getNewPassword()));
@@ -121,9 +126,10 @@ public class UserService {
 	}
 
 	public User findByEmail(String email) {
+		Locale locale = LocaleContextHolder.getLocale();
 		User user = repository.findByEmail(email);
 		if (user == null) {
-			throw new UserNotFoundException("User not found");
+			throw new UserNotFoundException(messageSource.getMessage("user.not.found", null, locale));
 		}
 		return user;
 	}

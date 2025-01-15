@@ -20,6 +20,6 @@ public enum UserType {
 				return value;
 			}
 		}
-		throw new IllegalArgumentException("Invalid Product Type");
+		throw new IllegalArgumentException("Invalid User Type");
 	}
 }

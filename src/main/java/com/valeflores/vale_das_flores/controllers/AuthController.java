@@ -1,6 +1,10 @@
 package com.valeflores.vale_das_flores.controllers;
 
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +39,10 @@ public class AuthController {
 
 	@Autowired
 	private LoginAttemptService loginAttemptService;
-	
+
+	@Autowired
+	private MessageSource messageSource;
+
 	@Operation(summary = "New User", description = "Create a new user", tags = "User", responses = {
 			@ApiResponse(responseCode = "201", description = "Successfully inserted", content = @Content(mediaType = "application/json", schema = @Schema(example = ""))) })
 	@PostMapping(value = "/register")
@@ -43,24 +50,25 @@ public class AuthController {
 		User user = UserMapper.toEntity(userCreateDTO);
 		user = service.insert(user);
 		String token = jwtUtil.generateToken(user.getEmail());
-		return ResponseEntity.ok(new AuthResponseDTO(token));
+		Locale locale = LocaleContextHolder.getLocale();
+		return ResponseEntity.status(201)
+				.body(new AuthResponseDTO(token, messageSource.getMessage("auth.register.successful", null, locale)));
 	}
 
 	@PostMapping(value = "/login", produces = "application/json")
-	public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequestDTO) {
-		if (loginAttemptService.isBlocked(loginRequestDTO.getEmail())) {
-			return ResponseEntity.status(429).body("Too many login attempts. Please try again later.");
-		}
+	public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+		Locale locale = LocaleContextHolder.getLocale();
+		loginAttemptService.isBlocked(loginRequestDTO.getEmail());
 
-		boolean isAuthenticated = service.authenticateUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
-
-		if (isAuthenticated) {
+		if (service.authenticateUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword())) {
 			String token = jwtUtil.generateToken(loginRequestDTO.getEmail());
 			loginAttemptService.loginSucceeded(loginRequestDTO.getEmail());
-			return ResponseEntity.ok(new AuthResponseDTO(token));
+			return ResponseEntity
+					.ok(new AuthResponseDTO(token, messageSource.getMessage("auth.login.successful", null, locale)));
 		}
 
 		loginAttemptService.loginFailed(loginRequestDTO.getEmail());
-		return ResponseEntity.status(401).body("Unauthorized");
+		return ResponseEntity.status(401)
+				.body(new AuthResponseDTO(null, messageSource.getMessage("auth.login.failed", null, locale)));
 	}
 }
