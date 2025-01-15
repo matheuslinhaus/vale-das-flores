@@ -1,9 +1,14 @@
 package com.valeflores.vale_das_flores.controllers;
 
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,6 +34,9 @@ public class UserController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	@Autowired
+	private MessageSource messageSource;
+
 	@GetMapping(value = "/me", produces = "application/json")
 	public ResponseEntity<UserResponseDTO> getUserFromToken(@RequestHeader("Authorization") String token) {
 		token = token.replace("Bearer ", "");
@@ -51,10 +59,11 @@ public class UserController {
 		User updatedUser = service.update(user, userUpdateDTO);
 
 		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
-		AuthResponseDTO response = new AuthResponseDTO(newToken);
-		return ResponseEntity.ok(response);
+		Locale locale = LocaleContextHolder.getLocale();
+		return ResponseEntity
+				.ok(new AuthResponseDTO(newToken, messageSource.getMessage("user.update.successful", null, locale)));
 	}
-	
+
 	@PutMapping(value = "/me/change-password", produces = "application/json")
 	public ResponseEntity<AuthResponseDTO> updatePasswordFromToken(@RequestHeader("Authorization") String token,
 			@RequestBody UpdatePasswordDTO passwordDTO) {
@@ -62,11 +71,12 @@ public class UserController {
 		jwtUtil.isTokenExpired(token);
 		String email = jwtUtil.extractUsername(token);
 		User user = service.findByEmail(email);
-
 		User updatedUser = service.updatePassword(user, passwordDTO);
 
 		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
-		AuthResponseDTO response = new AuthResponseDTO(newToken);
-		return ResponseEntity.ok(response);
+		Locale locale = LocaleContextHolder.getLocale();
+
+		return ResponseEntity.ok(new AuthResponseDTO(newToken,
+				messageSource.getMessage("user.update.password.successful", null, locale)));
 	}
 }

@@ -1,11 +1,16 @@
 package com.valeflores.vale_das_flores.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResponseDTO {
 
 	private String token;
+	private String message;
 
-	public AuthResponseDTO(String token) {
+	public AuthResponseDTO(String token, String message) {
 		this.token = token;
+		this.message = message;
 	}
 
 	public String getToken() {
@@ -14,5 +19,13 @@ public class AuthResponseDTO {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }
