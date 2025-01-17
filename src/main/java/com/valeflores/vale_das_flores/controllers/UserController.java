@@ -8,7 +8,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -58,7 +57,7 @@ public class UserController {
 
 		User updatedUser = service.update(user, userUpdateDTO);
 
-		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
+		String newToken = jwtUtil.generateToken(updatedUser.getEmail(), user.getRole().toString());
 		Locale locale = LocaleContextHolder.getLocale();
 		return ResponseEntity
 				.ok(new AuthResponseDTO(newToken, messageSource.getMessage("user.update.successful", null, locale)));
@@ -73,7 +72,7 @@ public class UserController {
 		User user = service.findByEmail(email);
 		User updatedUser = service.updatePassword(user, passwordDTO);
 
-		String newToken = jwtUtil.generateToken(updatedUser.getEmail());
+		String newToken = jwtUtil.generateToken(updatedUser.getEmail(), user.getRole().toString());
 		Locale locale = LocaleContextHolder.getLocale();
 
 		return ResponseEntity.ok(new AuthResponseDTO(newToken,

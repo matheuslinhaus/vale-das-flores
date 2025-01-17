@@ -49,7 +49,7 @@ public class AuthController {
 	public ResponseEntity<AuthResponseDTO> insert(@RequestBody UserCreateDTO userCreateDTO) {
 		User user = UserMapper.toEntity(userCreateDTO);
 		user = service.insert(user);
-		String token = jwtUtil.generateToken(user.getEmail());
+		String token = jwtUtil.generateToken(user.getEmail(), user.getRole().toString());
 		Locale locale = LocaleContextHolder.getLocale();
 		return ResponseEntity.status(201)
 				.body(new AuthResponseDTO(token, messageSource.getMessage("auth.register.successful", null, locale)));
@@ -61,7 +61,8 @@ public class AuthController {
 		loginAttemptService.isBlocked(loginRequestDTO.getEmail());
 
 		if (service.authenticateUser(loginRequestDTO.getEmail(), loginRequestDTO.getPassword())) {
-			String token = jwtUtil.generateToken(loginRequestDTO.getEmail());
+			User user = service.findByEmail(loginRequestDTO.getEmail());
+			String token = jwtUtil.generateToken(loginRequestDTO.getEmail(), user.getRole().toString());
 			loginAttemptService.loginSucceeded(loginRequestDTO.getEmail());
 			return ResponseEntity
 					.ok(new AuthResponseDTO(token, messageSource.getMessage("auth.login.successful", null, locale)));
