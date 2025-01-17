@@ -16,11 +16,12 @@ public class JwtUtil {
 	 private String secretKey = "mySecretKey";
 	 
 	// Método para gerar o token JWT
-	    public String generateToken(String username) {
+	    public String generateToken(String username, String role) {
 	        Algorithm algorithm = Algorithm.HMAC256(secretKey);  // Usando HMAC256 para assinatura
 
 	        return JWT.create()
 	                .withSubject(username)  // O subject é o identificador do usuário
+	                .withClaim("role", role)
 	                .withIssuedAt(new Date())  // Data de emissão
 	                .withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // Expira em 10 horas
 	                .sign(algorithm);  // Assinando o token
