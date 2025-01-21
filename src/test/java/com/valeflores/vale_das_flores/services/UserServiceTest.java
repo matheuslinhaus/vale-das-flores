@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.valeflores.vale_das_flores.entities.User;
 import com.valeflores.vale_das_flores.repositories.UserRepository;
@@ -22,7 +22,7 @@ public class UserServiceTest {
     @Autowired
     private UserService userService;
 
-    @MockitoBean
+    @MockBean
     private UserRepository userRepository;
 
     @BeforeEach
