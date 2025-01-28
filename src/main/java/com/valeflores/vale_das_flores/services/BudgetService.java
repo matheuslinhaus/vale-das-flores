@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.valeflores.vale_das_flores.entities.Budget;
+import com.valeflores.vale_das_flores.entities.enums.StatusBudget;
 import com.valeflores.vale_das_flores.repositories.BudgetRepository;
 
 @Service
@@ -26,5 +27,9 @@ public class BudgetService {
 
 	public List<Budget> findByUserId(Long userId) {
 		return repository.findByUserId(userId);
+	}
+
+	public List<Budget> findByUserIdAndStatus(Long id, StatusBudget status) {
+		return repository.findByUserIdAndStatus(id, status);
 	}
 }
