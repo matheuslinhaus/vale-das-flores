@@ -15,17 +15,16 @@ public class BudgetService {
 	@Autowired
 	private BudgetRepository repository;
 
-
 	@Transactional
 	public Budget insert(Budget budget) {
-
-
 		return repository.save(budget);
 	}
-
 
 	public List<Budget> findAll() {
 		return repository.findAll();
 	}
 
+	public List<Budget> findByUserId(Long userId) {
+		return repository.findByUserId(userId);
+	}
 }

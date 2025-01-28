@@ -133,4 +133,11 @@ public class UserService {
 		}
 		return user;
 	}
+	
+	public User findById(Long id) {
+	    Locale locale = LocaleContextHolder.getLocale();
+	    return repository.findById(id)
+	            .orElseThrow(() -> new UserNotFoundException(messageSource.getMessage("user.not.found", null, locale)));
+	}
+
 }
