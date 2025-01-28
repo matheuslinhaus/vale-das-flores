@@ -12,9 +12,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 
-@Entity(name= "tb_budget")
+@Entity(name = "tb_budget")
 public class Budget {
 
 	@Id
@@ -32,19 +34,24 @@ public class Budget {
 	private Instant budgetDay = Instant.now();
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT")
-	private Instant dueDate; 
+	private Instant dueDate;
 
-    @Lob
-    @Column(name = "image", columnDefinition = "BLOB")
-    private byte[] image;
+	@Lob
+	@Column(name = "image", columnDefinition = "BLOB")
+	private byte[] image;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
 	public Budget() {
 	}
 
-	public Budget(String title, String description, byte[] image) {
+	public Budget(String title, String description, byte[] image, User user) {
 		this.title = title;
 		this.description = description;
 		this.image = image;
+		this.user = user;
 	}
 
 	public Long getId() {
@@ -101,6 +108,14 @@ public class Budget {
 
 	public void setImage(byte[] image) {
 		this.image = image;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 }

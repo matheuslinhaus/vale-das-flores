@@ -7,6 +7,7 @@ public class BudgetCreateDTO {
 	private String title;
 	private String description;
 	private MultipartFile image;
+	private Long userId;
 
 	public String getTitle() {
 		return title;
@@ -31,5 +32,13 @@ public class BudgetCreateDTO {
 
 	public void setImage(MultipartFile image) {
 		this.image = image;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 }

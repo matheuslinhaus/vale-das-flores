@@ -17,8 +17,15 @@ public class SecurityConfig {
 	
 	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable() // Desabilita CSRF para simplificar durante o desenvolvimento
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()); // Permite todas as requisições
+        http
+            .csrf().disable() // Desabilita CSRF para simplificar
+            .headers().frameOptions().disable() // Permite frames para o console do H2
+            .and()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/h2-console/**").permitAll() // Permite acesso ao console H2
+                .requestMatchers("/api/**").permitAll() // Permite acesso externo às APIs
+                .anyRequest().authenticated() // Exige autenticação para outros endpoints
+            );
         return http.build();
     }
 }
