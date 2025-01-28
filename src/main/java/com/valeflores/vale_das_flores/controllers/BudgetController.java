@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.valeflores.vale_das_flores.config.JwtUtil;
@@ -18,6 +19,7 @@ import com.valeflores.vale_das_flores.dto.BudgetCreateDTO;
 import com.valeflores.vale_das_flores.dto.BudgetResponseDTO;
 import com.valeflores.vale_das_flores.entities.Budget;
 import com.valeflores.vale_das_flores.entities.User;
+import com.valeflores.vale_das_flores.entities.enums.StatusBudget;
 import com.valeflores.vale_das_flores.mappers.BudgetMapper;
 import com.valeflores.vale_das_flores.services.BudgetService;
 import com.valeflores.vale_das_flores.services.UserService;
@@ -62,15 +64,25 @@ public class BudgetController {
 	}
 
 	@GetMapping
-	public ResponseEntity<?> getAllBudgetsUser(@RequestHeader("Authorization") String token) {
+	public ResponseEntity<?> getAllBudgetsUser(@RequestHeader("Authorization") String token,
+			@RequestParam(required = false) StatusBudget status) {
 		try {
 			token = token.replace("Bearer ", "");
 			jwtUtil.isTokenExpired(token);
 			String email = jwtUtil.extractUsername(token);
 			User user = serviceUser.findByEmail(email);
-			user.getId();
-			List<Budget> budgets = service.findByUserId(user.getId());
+
+			// Se um status for fornecido, filtra os orçamentos com esse status, caso
+			// contrário, retorna todos.
+			List<Budget> budgets;
+			if (status != null) {
+				budgets = service.findByUserIdAndStatus(user.getId(), status);
+			} else {
+				budgets = service.findByUserId(user.getId());
+			}
+
 			List<BudgetResponseDTO> responseDTOs = budgets.stream().map(BudgetMapper::toResponseDTO).toList();
+
 			return ResponseEntity.ok(responseDTOs);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
